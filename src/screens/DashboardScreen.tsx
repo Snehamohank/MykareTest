@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import axios from 'axios'; // Import axios
 import {Storage} from '../utlis/storage'; 
 import {UserList} from '../component/UserList'; 
 
@@ -25,6 +26,7 @@ export const DashboardScreen = ({navigation}: {navigation: any})  => {
   const [location, setLocation] = useState<LocationData | null>(null);
   const [showUsers, setShowUsers] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     const loadData = async () => {
@@ -34,14 +36,36 @@ export const DashboardScreen = ({navigation}: {navigation: any})  => {
       if (currentUser?.isAdmin) {
         setUsers(await Storage.getUsers());
       }
+
       try {
-        const ipResponse = await fetch('https://api.ipify.org?format=json');
-        const {ip} = await ipResponse.json();
-        const countryResponse = await fetch(`http://ip-api.com/json/${ip}`);
-        const {country} = await countryResponse.json();
-        setLocation({ip, country});
+        const ipResponse = await axios.get('https://api.ipify.org?format=json');
+        const ip = ipResponse.data.ip;
+
+        const countryResponse = await axios.get(`http://ip-api.com/json/${ip}`, {
+          params: {
+            fields: 'country'
+          }
+        });
+        
+        setLocation({
+          ip: ip,
+          country: countryResponse.data.country || 'Unknown'
+        });
       } catch (error) {
-        setLocation({ip: 'Unknown', country: 'Unknown'});
+        try {
+          const fallbackResponse = await axios.get('https://ipinfo.io/json');
+          setLocation({
+            ip: fallbackResponse.data.ip || 'Unknown',
+            country: fallbackResponse.data.country || 'Unknown'
+          });
+        } catch (fallbackError) {
+          setLocation({
+            ip: 'Unknown',
+            country: 'Unknown'
+          });
+        }
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -59,7 +83,9 @@ export const DashboardScreen = ({navigation}: {navigation: any})  => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.welcome}>Welcome, {user.username}</Text>
 
-      {location && (
+      {loading ? (
+        <Text style={styles.loadingText}>Loading location data...</Text>
+      ) : location && (
         <View style={styles.locationContainer}>
           <Text style={styles.locationText}>IP Address: {location.ip}</Text>
           <Text style={styles.locationText}>Country: {location.country}</Text>
@@ -117,6 +143,12 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: 16,
     marginVertical: 5,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginVertical: 20,
   },
   adminSection: {
     marginBottom: 20,

@@ -6,7 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import axios from 'axios'; // Import axios
+import axios from 'axios'; 
 import {Storage} from '../utlis/storage'; 
 import {UserList} from '../component/UserList'; 
 

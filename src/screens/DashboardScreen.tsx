@@ -19,6 +19,7 @@ type User = {
 type LocationData = {
   ip: string;
   country: string;
+  city:string
 };
 
 export const DashboardScreen = ({navigation}: {navigation: any})  => {
@@ -40,12 +41,15 @@ export const DashboardScreen = ({navigation}: {navigation: any})  => {
       try {
         const ipResponse = await axios.get('https://api.ipify.org?format=json');
         const ip = ipResponse.data.ip;
-        const countryResponse = await axios.get(`https://ipinfo.io/json`, {
+        const countryResponse = await axios.get(`http://ip-api.com/json/${ip}`, {
         });
+        console.log('countryResponse',countryResponse);
+        
         
         setLocation({
           ip: ip,
-          country: countryResponse.data.country || 'Unknown'
+          country: countryResponse.data.country || 'Unknown',
+          city:countryResponse.data.city || 'Unknown'
         });
       } catch (error) {
        
@@ -74,6 +78,7 @@ export const DashboardScreen = ({navigation}: {navigation: any})  => {
         <View style={styles.locationContainer}>
           <Text style={styles.locationText}>IP Address: {location.ip}</Text>
           <Text style={styles.locationText}>Country: {location.country}</Text>
+          <Text style={styles.locationText}>City: {location.city}</Text>
         </View>
       )}
 

@@ -40,11 +40,7 @@ export const DashboardScreen = ({navigation}: {navigation: any})  => {
       try {
         const ipResponse = await axios.get('https://api.ipify.org?format=json');
         const ip = ipResponse.data.ip;
-
-        const countryResponse = await axios.get(`http://ip-api.com/json/${ip}`, {
-          params: {
-            fields: 'country'
-          }
+        const countryResponse = await axios.get(`https://ipinfo.io/json`, {
         });
         
         setLocation({
@@ -52,18 +48,7 @@ export const DashboardScreen = ({navigation}: {navigation: any})  => {
           country: countryResponse.data.country || 'Unknown'
         });
       } catch (error) {
-        try {
-          const fallbackResponse = await axios.get('https://ipinfo.io/json');
-          setLocation({
-            ip: fallbackResponse.data.ip || 'Unknown',
-            country: fallbackResponse.data.country || 'Unknown'
-          });
-        } catch (fallbackError) {
-          setLocation({
-            ip: 'Unknown',
-            country: 'Unknown'
-          });
-        }
+       
       } finally {
         setLoading(false);
       }
